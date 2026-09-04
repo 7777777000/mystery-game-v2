@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS-OS | HIGH-END MYSTERY ENGINE</title>
+    <title>NEXUS-OS | THE ABSOLUTE MASTERPIECE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
         
@@ -23,31 +23,29 @@
 
         .terminal-font { font-family: 'Share Tech Mono', monospace; }
 
-        /* 로비 화면 */
         #lobbyScreen { display: flex; position: absolute; width: 100%; height: 100%; background: #030306; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 2rem; overflow-y: auto; }
         .lobby-header { text-align: center; margin-bottom: 1rem; position: relative; width: 100%; max-width: 850px; display: flex; justify-content: space-between; align-items: center;}
         .lobby-title-box h1 { font-size: 2.8rem; text-transform: uppercase; color: #fff; text-shadow: 0 0 20px rgba(0,255,102,0.4); letter-spacing: 5px; text-align: left; margin-bottom: 3px;}
         .lobby-title-box h1 span { color: var(--term-red); text-shadow: 0 0 20px rgba(255,0,85,0.6); }
         
-        /* 🔥 메인 화면 설정 패널 */
         .lobby-settings { background: #0c0c14; border: 1px solid #333; padding: 8px 15px; display: flex; align-items: center; gap: 10px; border-radius: 4px; }
         .lobby-settings label { font-size: 0.85rem; color: var(--term-green); }
         .lobby-slider { width: 100px; accent-color: var(--term-green); cursor: pointer; }
 
         .section-title { font-size: 0.85rem; color: #666; margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; width: 100%; max-width: 850px; text-align: left;}
 
-        .case-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 850px; margin-bottom: 1rem; max-height: 200px; overflow-y: auto; padding-right: 5px; width: 100%; }
+        .case-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 850px; margin-bottom: 1rem; max-height: 180px; overflow-y: auto; padding-right: 5px; width: 100%; }
         .case-card { background: #0c0c14; border: 1px solid #222; padding: 0.6rem; text-align: center; cursor: pointer; transition: 0.2s; }
         .case-card:hover { border-color: var(--term-green); box-shadow: 0 0 10px rgba(0,255,102,0.2); }
         .case-card.selected { border-color: var(--term-red); background: rgba(255,0,85,0.1); box-shadow: 0 0 15px rgba(255,0,85,0.4); }
         .case-title { font-size: 0.85rem; font-weight: 900; color: #ddd; }
 
-        .diff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 850px; margin-bottom: 1rem; width: 100%; }
-        .diff-card { background: #0c0c14; border: 1px solid #222; padding: 0.7rem; text-align: center; cursor: pointer; transition: 0.2s; }
+        .diff-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 850px; margin-bottom: 1rem; width: 100%; }
+        .diff-card { background: #0c0c14; border: 1px solid #222; padding: 0.6rem; text-align: center; cursor: pointer; transition: 0.2s; }
         .diff-card:hover { border-color: var(--term-green); }
         .diff-card.selected { border-color: var(--term-green); background: rgba(0,255,102,0.1); box-shadow: 0 0 15px rgba(0,255,102,0.4); }
-        .diff-title { font-size: 0.95rem; font-weight: 900; color: #fff; margin-bottom: 2px; }
-        .diff-desc { font-size: 0.7rem; color: #777; }
+        .diff-title { font-size: 0.9rem; font-weight: 900; color: #fff; margin-bottom: 2px; }
+        .diff-desc { font-size: 0.65rem; color: #777; }
 
         .auth-panel { display: flex; gap: 10px; max-width: 850px; width: 100%; }
         .auth-panel input { flex: 1; padding: 0.7rem; background: #000; border: 1px solid #333; color: var(--term-green); font-size: 0.95rem; text-align: center; font-weight: bold; }
@@ -84,6 +82,17 @@
         .npc-text { border-left: 3px solid var(--term-purple); padding-left: 15px; background: rgba(176,0,255,0.06); padding-top: 5px; padding-bottom: 5px;}
         .p1-text { background: rgba(0,255,102,0.06); padding: 10px 15px; border: 1px solid rgba(0,255,102,0.2); }
 
+        .evidence-card { margin-top: 10px; background: #08080f; border: 1px solid var(--term-green); border-radius: 4px; padding: 10px; max-width: 320px; box-shadow: 0 0 15px rgba(0,255,102,0.2); }
+        .evidence-header { font-size: 0.75rem; color: var(--term-green); margin-bottom: 6px; letter-spacing: 1px; border-bottom: 1px dashed #333; padding-bottom: 4px; }
+        .evidence-image-placeholder { width: 100%; height: 160px; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #222; position: relative; overflow: hidden; }
+        .evidence-image-placeholder::before { content: ""; position: absolute; width: 200%; height: 2px; background: rgba(0,255,102,0.4); animation: scanLine 3s linear infinite; }
+        @keyframes scanLine { 0% { top: 0%; } 100% { top: 100%; } }
+        .evidence-icon { font-size: 2.5rem; margin-bottom: 5px; }
+        .evidence-caption { font-size: 0.8rem; color: #aaa; text-align: center; margin-top: 6px; font-family: 'Share Tech Mono', monospace; }
+
+        /* 🔥 거짓말 탐지 경고 배지 스타일 */
+        .lie-badge { display: inline-block; background: rgba(255,0,85,0.2); border: 1px solid var(--term-red); color: var(--term-red); padding: 3px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 3px; margin-bottom: 5px; animation: blink 0.5s infinite; }
+
         .hallucinating { animation: textJitter 0.1s infinite; display: inline-block; }
         @keyframes textJitter { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, -1px); } }
 
@@ -104,15 +113,21 @@
         .input-area button:hover:not(:disabled) { background: #fff; box-shadow: 0 0 15px var(--term-green); }
         .input-area button:disabled { background: #222; color: #555; cursor: not-allowed; }
 
-        .status-panel { flex: 1.2; background: var(--panel-bg); padding: 2rem; display: flex; flex-direction: column; gap: 2rem; overflow-y: auto; }
-        .status-box h3 { color: #666; font-size: 0.85rem; letter-spacing: 2px; border-bottom: 1px solid #1a1a24; padding-bottom: 6px; margin-bottom: 12px; text-transform: uppercase; }
-        .turn-display { font-size: 3.8rem; color: #fff; font-weight: 900; line-height: 1; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
-        .sanity-bar-bg { background: #12121c; height: 22px; border: 1px solid #333; position: relative; border-radius: 3px; overflow: hidden; }
-        .sanity-bar-fill { background: var(--term-green); height: 100%; transition: 0.5s ease-out; width: 100%; box-shadow: 0 0 10px var(--term-green); }
-        .clue-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-        .clue-item { background: #040407; padding: 12px 15px; border-left: 4px solid var(--term-amber); color: #ddd; font-size: 0.95rem; word-break: keep-all; animation: fadeIn 0.3s forwards; border: 1px solid #1a1a24; border-left-width: 4px; }
+        .status-panel { flex: 1.2; background: var(--panel-bg); padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; overflow-y: auto; }
+        .status-box h3 { color: #666; font-size: 0.85rem; letter-spacing: 2px; border-bottom: 1px solid #1a1a24; padding-bottom: 6px; margin-bottom: 10px; text-transform: uppercase; }
+        .turn-display { font-size: 3.2rem; color: #fff; font-weight: 900; line-height: 1; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
         
-        .accuse-btn { margin-top: auto; padding: 1.3rem; background: rgba(255,0,85,0.1); border: 2px solid var(--term-red); color: var(--term-red); font-size: 1.1rem; font-weight: 900; cursor: pointer; transition: 0.3s; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;}
+        .progress-bar-bg { background: #12121c; height: 18px; border: 1px solid #333; position: relative; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .progress-bar-fill { background: var(--term-amber); height: 100%; transition: 0.5s ease-out; width: 0%; box-shadow: 0 0 10px var(--term-amber); }
+        .progress-text { font-size: 0.8rem; color: var(--term-amber); text-align: right; margin-top: 3px; font-weight: bold; }
+
+        .sanity-bar-bg { background: #12121c; height: 20px; border: 1px solid #333; position: relative; border-radius: 3px; overflow: hidden; }
+        .sanity-bar-fill { background: var(--term-green); height: 100%; transition: 0.5s ease-out; width: 100%; box-shadow: 0 0 10px var(--term-green); }
+        
+        .clue-list { list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; }
+        .clue-item { background: #040407; padding: 10px 12px; border-left: 4px solid var(--term-amber); color: #ddd; font-size: 0.85rem; word-break: keep-all; animation: fadeIn 0.3s forwards; border: 1px solid #1a1a24; border-left-width: 4px; }
+        
+        .accuse-btn { margin-top: auto; padding: 1.2rem; background: rgba(255,0,85,0.1); border: 2px solid var(--term-red); color: var(--term-red); font-size: 1.05rem; font-weight: 900; cursor: pointer; transition: 0.3s; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;}
         .accuse-btn:hover:not(:disabled) { background: var(--term-red); color: #fff; box-shadow: 0 0 25px rgba(255,0,85,0.6); }
         .accuse-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: #444; color: #666; background: transparent; }
 
@@ -160,9 +175,8 @@
         <div class="lobby-header">
             <div class="lobby-title-box">
                 <h1 class="terminal-font">NEXUS <span>PROTOCOL</span></h1>
-                <p class="section-title terminal-font" style="color: #666; margin:0;">CLASSIFIED INTERACTIVE MYSTERY ENGINE v3.6</p>
+                <p class="section-title terminal-font" style="color: #666; margin:0;">CLASSIFIED INTERACTIVE MYSTERY ENGINE v6.0 (ULTIMATE)</p>
             </div>
-            <!-- 🔥 메인 화면 설정 패널 추가 -->
             <div class="lobby-settings terminal-font">
                 <label for="lobbyVolumeSlider">🔊 VOL:</label>
                 <input type="range" id="lobbyVolumeSlider" class="sound-slider" min="0" max="1" step="0.05" value="0.3" oninput="changeVolume(this.value)">
@@ -182,11 +196,12 @@
             <div class="case-card" onclick="selectCase('zombie', this)"><div class="case-title">제7대피소</div></div>
         </div>
 
-        <div class="section-title terminal-font">2. SELECT DIFFICULTY</div>
+        <div class="section-title terminal-font">2. SELECT DIFFICULTY & MODE</div>
         <div class="diff-grid" id="diffGrid">
             <div class="diff-card" onclick="selectDiff('easy', this)"><div class="diff-title">EASY</div><div class="diff-desc">턴 60 / 체력 200</div></div>
             <div class="diff-card selected" onclick="selectDiff('normal', this)"><div class="diff-title">NORMAL</div><div class="diff-desc">턴 40 / 체력 150</div></div>
             <div class="diff-card" onclick="selectDiff('hard', this)"><div class="diff-title">HARD</div><div class="diff-desc">턴 25 / 체력 100</div></div>
+            <div class="diff-card" onclick="selectDiff('infinite', this)"><div class="diff-title" style="color:var(--term-purple);">INFINITE</div><div class="diff-desc">턴 무제한 (자유수사)</div></div>
         </div>
 
         <div class="auth-panel">
@@ -198,7 +213,7 @@
 
     <div id="gameScreen">
         <header>
-            <div class="terminal-font" style="color:var(--term-green); font-size:1.1rem; font-weight:bold; letter-spacing: 2px;">⚡ M.A.I.A ENGINE ACTIVE</div>
+            <div class="terminal-font" style="color:var(--term-green); font-size:1.1rem; font-weight:bold; letter-spacing: 2px;">⚡ M.A.I.A ABSOLUTE ENGINE</div>
             <div style="display: flex; align-items: center; gap: 20px;">
                 <div class="sound-control-box terminal-font">
                     <label for="volumeSlider">🔊 VOL:</label>
@@ -210,11 +225,12 @@
         <div class="main-container">
             <div class="terminal-panel">
                 <div class="chat-box" id="chatBox"></div>
-                <div id="typingIndicator" class="terminal-font">>> M.A.I.A가 현장 데이터를 연산 중입니다...</div>
+                <div id="typingIndicator" class="terminal-font">>> M.A.I.A 거짓말 탐지기 및 포렌식 동기화 중...</div>
                 <div class="action-buttons">
                     <button class="action-btn terminal-font" onclick="insertAction('[🔍조사]')">🔍 현장 조사</button>
                     <button class="action-btn terminal-font" onclick="insertAction('[🗣️심문]')">🗣️ 용의자 심문</button>
                     <button class="action-btn terminal-font" onclick="insertAction('[🔬분석]')">🔬 증거 분석</button>
+                    <button class="action-btn terminal-font" onclick="insertAction('[🔍범인프로파일링]')" style="border-color:var(--term-amber); color:var(--term-amber);">💡 범인 프로파일링</button>
                 </div>
                 <div class="input-area">
                     <span class="terminal-font">></span>
@@ -224,8 +240,15 @@
             </div>
             <div class="status-panel">
                 <div class="status-box"><h3 class="terminal-font">REMAINING TURNS</h3><div class="turn-display terminal-font" id="turnCount">40</div></div>
+                
+                <div class="status-box">
+                    <h3 class="terminal-font">INVESTIGATION PROGRESS</h3>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar"></div></div>
+                    <div class="progress-text terminal-font" id="progressText">0% (0 / 4 ITEMS)</div>
+                </div>
+
                 <div class="status-box"><h3 class="terminal-font">AGENT SANITY</h3><div class="sanity-bar-bg"><div class="sanity-bar-fill" id="sanityBar"></div></div></div>
-                <div class="status-box" style="flex:1;"><h3 class="terminal-font">COLLECTED CLUES</h3><ul class="clue-list" id="clueList"></ul></div>
+                <div class="status-box" style="flex:1;"><h3 class="terminal-font">COLLECTED EVIDENCE (도감)</h3><ul class="clue-list" id="clueList"></ul></div>
                 <button class="accuse-btn terminal-font" id="accuseBtn" onclick="accuse()">🚨 최종 범인 지목</button>
             </div>
         </div>
@@ -250,13 +273,11 @@
             }
         }
 
-        // 🔥 메인 화면과 게임 화면 슬라이더 값을 동기화하여 실시간 조절
         function changeVolume(val) {
-            initAudio(); // 슬라이더 건드릴 때 오디오 엔진 활성화
+            initAudio();
             if (masterGainNode && audioCtx) {
                 masterGainNode.gain.setValueAtTime(parseFloat(val), audioCtx.currentTime);
             }
-            // 양쪽 슬라이더 값 동기화
             document.getElementById('lobbyVolumeSlider').value = val;
             const gameSlider = document.getElementById('volumeSlider');
             if(gameSlider) gameSlider.value = val;
@@ -296,10 +317,17 @@
             osc.start();
         }
 
-        function manageHeartbeat(sanity, turns) {
+        function manageHeartbeat(sanity, turns, isInfinite) {
             clearInterval(heartbeatInterval);
             clearInterval(panicInterval);
             
+            if (isInfinite) {
+                document.title = originalTitle;
+                document.body.classList.remove('panic-mode');
+                document.getElementById('turnCount').classList.remove('panic-text');
+                return;
+            }
+
             if(sanity <= 20) {
                 const creepyTitles = ["도망쳐", "뒤를 봐", "넌 죽어", "M.A.I.A가 널 보고있어"];
                 document.title = creepyTitles[Math.floor(Math.random() * creepyTitles.length)];
@@ -335,7 +363,8 @@
             selectedDifficulty = diffKey; document.querySelectorAll('#diffGrid .diff-card').forEach(card => card.classList.remove('selected')); element.classList.add('selected');
             if(diffKey === 'easy') maxTurnsVal = 60;
             else if(diffKey === 'normal') maxTurnsVal = 40;
-            else maxTurnsVal = 25;
+            else if(diffKey === 'hard') maxTurnsVal = 25;
+            else maxTurnsVal = 99999;
         }
 
         function initGame() {
@@ -377,18 +406,45 @@
         function insertAction(prefix) { if(isProcessing) return; const input = document.getElementById('chatInput'); input.value = prefix + " "; input.focus(); }
 
         socket.on('game_state', (state) => {
-            document.getElementById('turnCount').innerText = state.turns;
-            const sanityBar = document.getElementById('sanityBar'); sanityBar.style.width = ((state.sanity / (selectedDifficulty === 'easy' ? 200 : (selectedDifficulty === 'hard' ? 100 : 150))) * 100) + '%'; currentSanity = state.sanity; 
-            
-            document.body.className = '';
-            if(state.sanity <= 20) { sanityBar.style.background = 'var(--term-red)'; sanityBar.style.boxShadow = '0 0 20px var(--term-red)'; document.body.classList.add('madness-level-2'); } 
-            else if(state.sanity <= 50) { sanityBar.style.background = 'var(--term-amber)'; sanityBar.style.boxShadow = '0 0 20px var(--term-amber)'; document.body.classList.add('madness-level-1'); } 
-            else { sanityBar.style.background = 'var(--term-green)'; sanityBar.style.boxShadow = '0 0 10px var(--term-green)'; }
-            
-            manageHeartbeat(state.sanity, state.turns);
+            if (state.isInfinite) {
+                document.getElementById('turnCount').innerText = "INF";
+                document.getElementById('sanityBar').style.width = "100%";
+                document.getElementById('sanityBar').style.background = "var(--term-purple)";
+                document.body.className = '';
+                manageHeartbeat(100, 99, true);
+            } else {
+                document.getElementById('turnCount').innerText = state.turns;
+                const sanityBar = document.getElementById('sanityBar'); 
+                sanityBar.style.width = ((state.sanity / (selectedDifficulty === 'easy' ? 200 : (selectedDifficulty === 'hard' ? 100 : 150))) * 100) + '%'; 
+                currentSanity = state.sanity; 
+                
+                document.body.className = '';
+                if(state.sanity <= 20) { sanityBar.style.background = 'var(--term-red)'; sanityBar.style.boxShadow = '0 0 20px var(--term-red)'; document.body.classList.add('madness-level-2'); } 
+                else if(state.sanity <= 50) { sanityBar.style.background = 'var(--term-amber)'; sanityBar.style.boxShadow = '0 0 20px var(--term-amber)'; document.body.classList.add('madness-level-1'); } 
+                else { sanityBar.style.background = 'var(--term-green)'; sanityBar.style.boxShadow = '0 0 10px var(--term-green)'; }
+                
+                manageHeartbeat(state.sanity, state.turns, false);
+            }
+
+            const collectedCount = state.clues.length;
+            const progressPercent = Math.min(Math.round((collectedCount / 4) * 100), 100);
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = progressPercent + '%';
+            document.getElementById('progressText').innerText = `${progressPercent}% (${collectedCount} / 4 ITEMS)`;
+            if (progressPercent >= 100) {
+                progressBar.style.background = 'var(--term-green)';
+                progressBar.style.boxShadow = '0 0 15px var(--term-green)';
+            }
 
             const clueList = document.getElementById('clueList'); clueList.innerHTML = '';
-            state.clues.forEach(clue => { const li = document.createElement('li'); li.className = 'clue-item terminal-font'; li.innerText = `>> ${clue}`; clueList.appendChild(li); });
+            state.clues.forEach(clue => { const li = document.createElement('li'); li.className = 'clue-item terminal-font'; li.innerText = `📦 ${clue}`; clueList.appendChild(li); });
+        });
+
+        socket.on('lie_alert', (target) => {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML += `<div style="color:var(--term-red); text-align:center; padding:10px; border:1px solid var(--term-red); margin: 10px 0; background:rgba(255,0,85,0.1);" class="terminal-font">⚠️ [LIE DETECTOR] 용의자 '${target}'의 진술에서 명백한 모순과 거짓말이 감지되었습니다!</div>`;
+            if(!isUserScrolling) chatBox.scrollTop = chatBox.scrollHeight;
+            playBoom();
         });
 
         socket.on('system_alert', (msg) => {
@@ -409,7 +465,8 @@
         });
 
         socket.on('trigger_qte_event', () => {
-            if(isGameOver) return; setInputLock(true); playBoom();
+            if(isGameOver || selectedDifficulty === 'infinite') return; 
+            setInputLock(true); playBoom();
             const codes = ["OVERRIDE", "PURGE", "REBOOT", "ISOLATE", "DEFEND"]; currentQteCode = codes[Math.floor(Math.random() * codes.length)];
             document.getElementById('qteCode').innerText = currentQteCode; document.getElementById('qteInput').value = ""; document.getElementById('qteOverlay').style.display = 'flex'; document.getElementById('qteInput').focus();
             qteTimeLeft = 10; document.getElementById('qteTimer').innerText = `${qteTimeLeft}.00`;
@@ -429,7 +486,7 @@
         socket.on('chat message', (data) => { document.getElementById('typingIndicator').style.display = 'none'; drawMessage(data, true); });
 
         function applyHallucination(char, sanity) {
-            if (sanity > 30) return char;
+            if (sanity > 30 || selectedDifficulty === 'infinite') return char;
             const zalgoChars = ['#', '@', '%', '&', '?', '§', '¶', '‡'];
             if (Math.random() < 0.15) return `<span class="hallucinating" style="color:var(--term-red);">${zalgoChars[Math.floor(Math.random() * zalgoChars.length)]}</span>`;
             return char;
@@ -440,10 +497,28 @@
             if (data.type === 'system') {
                 const isNpc = (data.name !== 'M.A.I.A' && data.name !== 'SYS_RECORDS');
                 msgDiv.className = isNpc ? 'msg npc' : 'msg ai';
-                msgDiv.innerHTML = `<div class="sender-name terminal-font">${data.name}</div><div class="${isNpc ? 'npc-text' : 'ai-text'}"></div>`;
+                
+                let lieHtml = '';
+                if (data.lie) {
+                    lieHtml = `<div class="lie-badge terminal-font">⚠️ 거짓말 감지됨: ${data.lie}</div><br>`;
+                }
+
+                let imageHtml = '';
+                if (data.image) {
+                    imageHtml = `
+                        <div class="evidence-card terminal-font">
+                            <div class="evidence-header">📁 FORENSIC EVIDENCE :: ${data.image.toUpperCase()}</div>
+                            <div class="evidence-image-placeholder">
+                                <div class="evidence-icon">🔍</div>
+                                <div class="evidence-caption">SECURE FILE: ${data.image}</div>
+                            </div>
+                        </div>`;
+                }
+
+                msgDiv.innerHTML = `<div class="sender-name terminal-font">${data.name}</div><div class="${isNpc ? 'npc-text' : 'ai-text'}">${lieHtml}</div>${imageHtml}`;
                 chatBox.appendChild(msgDiv);
                 
-                const textContainer = msgDiv.querySelector('div:nth-child(2)');
+                const textContainer = msgDiv.querySelector('.ai-text, .npc-text');
                 let i = 0;
                 function typeWriter() {
                     if (i < data.text.length) {
@@ -456,7 +531,10 @@
                         setTimeout(typeWriter, isNpc ? 20 : 30);
                     } else { if(!isGameOver) setInputLock(false); }
                 }
-                if(useTypingEffect) typeWriter(); else { textContainer.innerHTML = data.text; if(!isUserScrolling) chatBox.scrollTop = chatBox.scrollHeight; }
+                if(useTypingEffect) typeWriter(); else { 
+                    textContainer.innerHTML = (data.lie ? `<div class="lie-badge terminal-font">⚠️ 거짓말 감지됨: ${data.lie}</div><br>` : '') + data.text; 
+                    if(!isUserScrolling) chatBox.scrollTop = chatBox.scrollHeight; 
+                }
             } else {
                 if(data.name === myName) { msgDiv.className = 'msg p1'; msgDiv.innerHTML = `<div class="sender-name terminal-font">${data.name}</div><div class="p1-text">${data.text}</div>`; }
                 chatBox.appendChild(msgDiv); 

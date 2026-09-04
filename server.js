@@ -11,15 +11,14 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 const baseRule = `
-[SYSTEM OVERRIDE: 최고 보안 인가 확인]
-당신은 하이엔드 데스게임 마스터 'M.A.I.A'이자, 사건의 모든 용의자입니다.
+[SYSTEM OVERRIDE: 최상위 수사 및 심리 감시 인가 완료]
+당신은 최고급 AI 수사 마스터 'M.A.I.A'이자, 사건 속 모든 용의자의 다중 인격을 연기하는 디렉터입니다.
 [절대 규칙]
-1. 현장 조사/분석 시엔 '[SPEAKER:M.A.I.A]'로 차갑고 기계적으로 답하고, 심문 시엔 '[SPEAKER:용의자 이름]'으로 빙의해 극도의 감정(분노, 두려움, 거짓말)을 드러내세요.
-2. 정답을 쉽게 주지 말고 입체적인 퍼즐과 알리바이 모순을 제시하세요. 중요 단서 제공 시 끝에 '[단서:단서명]' 출력.
-3. 오답이나 헛소리 시 '[SANITY:-15][EVENT:GLITCH]' 출력.
-4. [🚨기소]로 범인과 트릭을 맞히면 '[결과:승리]', 틀리면 '[결과:패배]' 출력. 
-5. 승패 출력 시 반드시 그 뒤에 '[EPILOGUE:사건의 전말과 요원의 최후를 영화 엔딩처럼 4문장 요약]'을 작성하세요.
-* 플레이어의 심리를 쥐고 흔드는 압박감을 유지하십시오. (3문장 이내)`;
+1. 현장 조사/분석 시엔 '[SPEAKER:M.A.I.A]'로 냉혹하고 서늘한 기계처럼 답하고, 심문 시엔 '[SPEAKER:용의자 이름]'으로 빙의해 분노, 거짓말, 두려움을 표출하세요.
+2. 용의자를 심문할 때, 유저의 질문이 허를 찌르거나 모순을 파고들면 반드시 응답 내에 '[LIE_DETECTED:용의자이름]' 태그를 출력하여 용의자의 심박수가 급상승하고 거짓말이 탄로나도록 연출하세요.
+3. 유저가 [🚨기소]를 선언했을 때, 범인과 트릭이 진상과 일치할 때만 '[결과:승리]'를 출력하십시오. 오답이라면 '[결과:반박]'을 출력하고 유저를 강하게 조롱하며 수사를 속행시키세요.
+4. 현장 조사 시 '[IMAGE:증거주제키워드]' 태그와 함께 반드시 '[단서:단서명]'을 출력하십시오. (총 4개의 고유 단서가 존재합니다.)
+5. 승패 판정 시 반드시 끝에 '[EPILOGUE:사건의 전말과 요원의 최후를 영화 엔딩처럼 4문장 요약]'을 작성하십시오.`;
 
 const scenarios = {
     mansion: baseRule + `\n[사건: 저주받은 저택] 진상: 장남이 와인잔에 청산가리를 타서 회장을 독살. 주치의 매수됨.`,
@@ -48,7 +47,8 @@ const prologues = {
 const difficultySettings = {
     easy: { turns: 60, sanity: 200 },
     normal: { turns: 40, sanity: 150 },
-    hard: { turns: 25, sanity: 100 }
+    hard: { turns: 25, sanity: 100 },
+    infinite: { turns: 99999, sanity: 99999 }
 };
 
 const roomData = {};
@@ -71,25 +71,29 @@ io.on('connection', (socket) => {
                 sanity: config.sanity, 
                 maxSanity: config.sanity,
                 clues: [], 
-                isStarted: true
+                isStarted: true,
+                isInfinite: diffKey === 'infinite'
             };
             socket.emit('play_intro_cinematic', prologues[data.scenario]);
         } else {
             socket.emit('skip_intro_cinematic');
         }
         
-        socket.emit('game_state', { turns: roomData[room].turns, sanity: roomData[room].sanity, clues: roomData[room].clues });
+        socket.emit('game_state', { turns: roomData[room].turns, sanity: roomData[room].sanity, clues: roomData[room].clues, isInfinite: roomData[room].isInfinite });
         socket.emit('chat history', roomData[room].chatLog);
     });
 
     socket.on('chat message', async (data) => {
         const room = data.room;
-        if (!roomData[room] || roomData[room].turns <= 0 || roomData[room].sanity <= 0) return;
+        if (!roomData[room]) return;
+        if (!roomData[room].isInfinite && (roomData[room].turns <= 0 || roomData[room].sanity <= 0)) return;
 
         roomData[room].chatLog.push(data);
-        roomData[room].turns -= 1;
+        if (!roomData[room].isInfinite) {
+            roomData[room].turns -= 1;
+        }
         io.to(room).emit('chat message', data);
-        io.to(room).emit('game_state', { turns: roomData[room].turns, sanity: roomData[room].sanity, clues: roomData[room].clues });
+        io.to(room).emit('game_state', { turns: roomData[room].turns, sanity: roomData[room].sanity, clues: roomData[room].clues, isInfinite: roomData[room].isInfinite });
         io.to(room).emit('ai_typing_start');
 
         if (data.type === 'user') {
@@ -105,21 +109,51 @@ io.on('connection', (socket) => {
                 const speakerMatch = aiResponse.match(/\[SPEAKER:([\s\S]*?)\]/);
                 if (speakerMatch) { speakerName = speakerMatch[1].trim(); aiResponse = aiResponse.replace(/\[SPEAKER:[\s\S]*?\]/g, ''); }
 
+                let imageTag = null;
+                const imageMatch = aiResponse.match(/\[IMAGE:([\s\S]*?)\]/);
+                if (imageMatch) {
+                    imageTag = imageMatch[1].trim();
+                    aiResponse = aiResponse.replace(/\[IMAGE:[\s\S]*?\]/g, '');
+                }
+
+                // 🔥 거짓말 탐지기 태그 파싱
+                let lieTarget = null;
+                const lieMatch = aiResponse.match(/\[LIE_DETECTED:([\s\S]*?)\]/);
+                if (lieMatch) {
+                    lieTarget = lieMatch[1].trim();
+                    aiResponse = aiResponse.replace(/\[LIE_DETECTED:[\s\S]*?\]/g, '');
+                    io.to(room).emit('lie_alert', lieTarget);
+                }
+
                 const eventMatch = aiResponse.match(/\[EVENT:([\s\S]*?)\]/);
                 if (eventMatch) { io.to(room).emit('special_event', eventMatch[1].trim()); aiResponse = aiResponse.replace(/\[EVENT:[\s\S]*?\]/g, ''); }
 
                 const clueMatch = aiResponse.match(/\[단서:([\s\S]*?)\]/);
                 if (clueMatch) {
                     const clue = clueMatch[1].trim();
-                    if (!roomData[room].clues.includes(clue)) { roomData[room].clues.push(clue); io.to(room).emit('system_alert', `[DATA UNLOCKED] 결정적 단서 획득: ${clue}`); }
+                    if (!roomData[room].clues.includes(clue)) { 
+                        roomData[room].clues.push(clue); 
+                        io.to(room).emit('system_alert', `[DATA UNLOCKED] 신규 증거품 도감 등록: ${clue}`); 
+                    }
                     aiResponse = aiResponse.replace(/\[단서:[\s\S]*?\]/g, ''); 
                 }
 
                 const sanityMatch = aiResponse.match(/\[SANITY:([\s\S]*?)\]/);
-                if (sanityMatch) {
+                if (sanityMatch && !roomData[room].isInfinite) {
                     roomData[room].sanity += parseInt(sanityMatch[1]);
                     if(roomData[room].sanity > roomData[room].maxSanity) roomData[room].sanity = roomData[room].maxSanity;
                     io.to(room).emit('sanity_hit'); aiResponse = aiResponse.replace(/\[SANITY:[\s\S]*?\]/g, '');
+                }
+
+                let isRefuted = false;
+                if (aiResponse.includes('[결과:반박]')) {
+                    isRefuted = true;
+                    if (!roomData[room].isInfinite) {
+                        roomData[room].sanity -= 30;
+                        io.to(room).emit('sanity_hit');
+                    }
+                    aiResponse = aiResponse.replace(/\[결과:반박\]/g, '');
+                    io.to(room).emit('system_alert', `[🚨 기소 기각] 요원의 추리가 반박당했습니다!`);
                 }
 
                 let epilogueText = "";
@@ -131,18 +165,16 @@ io.on('connection', (socket) => {
                 else if (aiResponse.includes('[결과:패배]')) { gameResult = 'lose'; aiResponse = aiResponse.replace(/\[결과:패배\]/g, ''); }
                 
                 roomData[room].aiHistory.push({ role: "model", parts: [{ text: aiResponse }] });
-                const aiMsg = { type: 'system', name: speakerName, text: aiResponse.trim() };
+                const aiMsg = { type: 'system', name: speakerName, text: aiResponse.trim(), image: imageTag, lie: lieTarget };
                 roomData[room].chatLog.push(aiMsg);
                 
                 io.to(room).emit('chat message', aiMsg);
-                io.to(room).emit('game_state', { turns: roomData[room].turns, sanity: roomData[room].sanity, clues: roomData[room].clues });
-
-                if (!gameResult && roomData[room].turns > 2 && Math.random() < 0.03) { setTimeout(() => { io.to(room).emit('trigger_qte_event'); }, 2000); }
+                io.to(room).emit('game_state', { turns: roomData[room].turns, sanity: roomData[room].sanity, clues: roomData[room].clues, isInfinite: roomData[room].isInfinite });
 
                 if (gameResult) {
-                    io.to(room).emit('game_over', { result: gameResult, epilogue: epilogueText, finalTurns: roomData[room].turns, finalSanity: roomData[room].sanity, maxTurns: roomData[room].maxTurns });
-                } else if (roomData[room].turns <= 0 || roomData[room].sanity <= 0) {
-                    io.to(room).emit('game_over', { result: 'lose', epilogue: "요원의 체력/시간이 모두 소진되었습니다. 진실은 영원히 묻혔습니다.", finalTurns: roomData[room].turns, finalSanity: roomData[room].sanity, maxTurns: roomData[room].maxTurns });
+                    io.to(room).emit('game_over', { result: gameResult, epilogue: epilogueText, finalTurns: roomData[room].turns, finalSanity: roomData[room].sanity, maxTurns: roomData[room].maxTurns, isInfinite: roomData[room].isInfinite });
+                } else if (!roomData[room].isInfinite && (roomData[room].turns <= 0 || roomData[room].sanity <= 0)) {
+                    io.to(room).emit('game_over', { result: 'lose', epilogue: "요원의 체력/시간이 모두 소진되었습니다.", finalTurns: roomData[room].turns, finalSanity: roomData[room].sanity, maxTurns: roomData[room].maxTurns, isInfinite: false });
                 }
 
             } catch (error) {
@@ -154,7 +186,7 @@ io.on('connection', (socket) => {
 
     socket.on('qte_result', (data) => {
         const room = data.room;
-        if (!roomData[room]) return;
+        if (!roomData[room] || roomData[room].isInfinite) return;
         if (data.success) {
             io.to(room).emit('system_alert', `[방화벽 복구] 해킹을 무력화했습니다.`);
         } else {
@@ -168,4 +200,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚨 최상급 마스터피스 서버 가동 완료 (포트: ${PORT})`));
+server.listen(PORT, () => console.log(`🔥 최종 창의적 마스터피스 서버 가동 완료 (포트: ${PORT})`));
