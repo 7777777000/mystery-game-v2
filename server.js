@@ -116,7 +116,6 @@ io.on('connection', (socket) => {
                     aiResponse = aiResponse.replace(/\[IMAGE:[\s\S]*?\]/g, '');
                 }
 
-                // 🔥 거짓말 탐지기 태그 파싱
                 let lieTarget = null;
                 const lieMatch = aiResponse.match(/\[LIE_DETECTED:([\s\S]*?)\]/);
                 if (lieMatch) {
@@ -200,4 +199,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🔥 최종 창의적 마스터피스 서버 가동 완료 (포트: ${PORT})`));
+server.listen(PORT, () => console.log(`🔥 절대 마스터피스 서버 가동 완료 (포트: ${PORT})`));
