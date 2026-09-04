@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS-OS | HIGH-END MYSTERY ENGINE</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
+        
+        :root { --bg-dark: #050508; --term-green: #00ff66; --term-amber: #ffb000; --term-red: #ff0055; --term-purple: #b000ff; --panel-bg: #09090e; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-dark); color: var(--term-green); font-family: 'Noto Sans KR', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: filter 0.5s ease; }
+        
+        body::before { content: " "; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(255, 0, 85, 0.03), rgba(0, 255, 102, 0.02), rgba(176, 0, 255, 0.03)); z-index: 999; background-size: 100% 3px, 4px 100%; pointer-events: none; }
+        body::after { content: " "; position: absolute; top: 5px; left: 5px; right: 5px; bottom: 5px; border: 1px solid rgba(0, 255, 102, 0.15); z-index: 998; pointer-events: none; }
+
+        .madness-level-1 { filter: blur(0.5px) sepia(0.3) hue-rotate(-20deg); box-shadow: inset 0 0 150px rgba(255,0,85,0.25); }
+        .madness-level-2 { filter: blur(1.5px) sepia(0.6) hue-rotate(-40deg); box-shadow: inset 0 0 300px rgba(255,0,85,0.6); }
+        
+        .panic-mode { animation: panicPulse 0.8s infinite; box-shadow: inset 0 0 120px rgba(255,0,85,0.8) !important; }
+        @keyframes panicPulse { 0% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(-30deg) contrast(1.6); } 100% { filter: hue-rotate(0deg); } }
+        .panic-text { color: var(--term-red) !important; animation: shake 0.2s infinite; font-weight: 900;}
+
+        .terminal-font { font-family: 'Share Tech Mono', monospace; }
+
+        /* 로비 화면 */
+        #lobbyScreen { display: flex; position: absolute; width: 100%; height: 100%; background: #030306; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 2rem; overflow-y: auto; }
+        .lobby-header { text-align: center; margin-bottom: 1rem; position: relative; width: 100%; max-width: 850px; display: flex; justify-content: space-between; align-items: center;}
+        .lobby-title-box h1 { font-size: 2.8rem; text-transform: uppercase; color: #fff; text-shadow: 0 0 20px rgba(0,255,102,0.4); letter-spacing: 5px; text-align: left; margin-bottom: 3px;}
+        .lobby-title-box h1 span { color: var(--term-red); text-shadow: 0 0 20px rgba(255,0,85,0.6); }
+        
+        /* 🔥 메인 화면 설정 패널 */
+        .lobby-settings { background: #0c0c14; border: 1px solid #333; padding: 8px 15px; display: flex; align-items: center; gap: 10px; border-radius: 4px; }
+        .lobby-settings label { font-size: 0.85rem; color: var(--term-green); }
+        .lobby-slider { width: 100px; accent-color: var(--term-green); cursor: pointer; }
+
+        .section-title { font-size: 0.85rem; color: #666; margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; width: 100%; max-width: 850px; text-align: left;}
+
+        .case-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 850px; margin-bottom: 1rem; max-height: 200px; overflow-y: auto; padding-right: 5px; width: 100%; }
+        .case-card { background: #0c0c14; border: 1px solid #222; padding: 0.6rem; text-align: center; cursor: pointer; transition: 0.2s; }
+        .case-card:hover { border-color: var(--term-green); box-shadow: 0 0 10px rgba(0,255,102,0.2); }
+        .case-card.selected { border-color: var(--term-red); background: rgba(255,0,85,0.1); box-shadow: 0 0 15px rgba(255,0,85,0.4); }
+        .case-title { font-size: 0.85rem; font-weight: 900; color: #ddd; }
+
+        .diff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 850px; margin-bottom: 1rem; width: 100%; }
+        .diff-card { background: #0c0c14; border: 1px solid #222; padding: 0.7rem; text-align: center; cursor: pointer; transition: 0.2s; }
+        .diff-card:hover { border-color: var(--term-green); }
+        .diff-card.selected { border-color: var(--term-green); background: rgba(0,255,102,0.1); box-shadow: 0 0 15px rgba(0,255,102,0.4); }
+        .diff-title { font-size: 0.95rem; font-weight: 900; color: #fff; margin-bottom: 2px; }
+        .diff-desc { font-size: 0.7rem; color: #777; }
+
+        .auth-panel { display: flex; gap: 10px; max-width: 850px; width: 100%; }
+        .auth-panel input { flex: 1; padding: 0.7rem; background: #000; border: 1px solid #333; color: var(--term-green); font-size: 0.95rem; text-align: center; font-weight: bold; }
+        .auth-panel input:focus { outline: none; border-color: var(--term-green); box-shadow: 0 0 10px rgba(0,255,102,0.3); }
+        .auth-panel button { padding: 0.7rem 2.5rem; background: var(--term-green); color: #000; font-weight: 900; border: none; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        .auth-panel button:hover { background: #fff; box-shadow: 0 0 20px var(--term-green); }
+
+        #cinematicOverlay { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index: 500; flex-direction: column; align-items: center; justify-content: center; padding: 10%; text-align: center; }
+        .cinematic-text { font-size: 2.2rem; color: #fff; letter-spacing: 3px; line-height: 1.6; opacity: 0; transition: opacity 1s ease-in-out; margin-bottom: 20px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .cinematic-text.active { opacity: 1; }
+
+        #gameScreen { display: none; height: 100vh; flex-direction: column; opacity: 0; transition: opacity 1s; }
+        header { padding: 1rem 2rem; background: #06060a; border-bottom: 1px solid rgba(0,255,102,0.2); display: flex; justify-content: space-between; align-items: center; }
+        
+        .sound-control-box { display: flex; align-items: center; gap: 10px; background: #0f0f17; padding: 5px 15px; border: 1px solid #333; }
+        .sound-control-box label { font-size: 0.85rem; color: var(--term-green); }
+        .sound-slider { width: 100px; accent-color: var(--term-green); cursor: pointer; }
+
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .terminal-panel { flex: 3; display: flex; flex-direction: column; background: #040407; border-right: 1px solid #1a1a24; position: relative; }
+        .chat-box { flex: 1; padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; scroll-behavior: smooth; }
+        
+        .msg { max-width: 85%; line-height: 1.7; font-size: 1.05rem; letter-spacing: 0.5px; opacity: 0; animation: fadeIn 0.4s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .msg.ai { align-self: flex-start; color: #eee; }
+        .msg.npc { align-self: flex-start; color: #fff; }
+        .msg.p1 { align-self: flex-end; color: var(--term-green); }
+        .sender-name { font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 5px; text-transform: uppercase; }
+        .msg.ai .sender-name { color: var(--term-green); font-weight: bold; }
+        .msg.npc .sender-name { color: var(--term-purple); font-weight: bold; text-shadow: 0 0 8px var(--term-purple); }
+        .msg.p1 .sender-name { color: #555; text-align: right; }
+        .ai-text { border-left: 3px solid var(--term-green); padding-left: 15px; background: rgba(0,255,102,0.02); padding-top: 5px; padding-bottom: 5px;}
+        .npc-text { border-left: 3px solid var(--term-purple); padding-left: 15px; background: rgba(176,0,255,0.06); padding-top: 5px; padding-bottom: 5px;}
+        .p1-text { background: rgba(0,255,102,0.06); padding: 10px 15px; border: 1px solid rgba(0,255,102,0.2); }
+
+        .hallucinating { animation: textJitter 0.1s infinite; display: inline-block; }
+        @keyframes textJitter { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, -1px); } }
+
+        #typingIndicator { display: none; padding: 10px 20px; color: var(--term-green); font-size: 0.9rem; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.3; } }
+
+        .action-buttons { padding: 10px 1.5rem 0 1.5rem; display: flex; gap: 10px; background: #06060a; }
+        .action-btn { padding: 8px 16px; background: #101018; border: 1px solid #333; color: #888; cursor: pointer; font-weight: bold; border-radius: 4px 4px 0 0; transition: 0.2s; }
+        .action-btn:hover:not(:disabled) { background: #1a1a26; color: var(--term-green); border-color: var(--term-green); }
+        .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .input-area { padding: 1rem 1.5rem 1.5rem 1.5rem; background: #06060a; border-top: 1px solid #1a1a24; display: flex; gap: 12px; align-items: center; }
+        .input-area span { color: var(--term-green); font-size: 1.4rem; font-weight: bold; }
+        .input-area input { flex: 1; background: #020204; border: 1px solid #333; color: #fff; font-size: 1.1rem; outline: none; padding: 12px 15px; border-radius: 4px; transition: 0.3s; }
+        .input-area input:focus:not(:disabled) { border-color: var(--term-green); box-shadow: 0 0 10px rgba(0,255,102,0.2); }
+        .input-area input:disabled { border-color: #222; color: #444; }
+        .input-area button { padding: 12px 30px; background: var(--term-green); color: #000; border: none; cursor: pointer; font-weight: 900; font-size: 1rem; border-radius: 4px; transition: 0.2s;}
+        .input-area button:hover:not(:disabled) { background: #fff; box-shadow: 0 0 15px var(--term-green); }
+        .input-area button:disabled { background: #222; color: #555; cursor: not-allowed; }
+
+        .status-panel { flex: 1.2; background: var(--panel-bg); padding: 2rem; display: flex; flex-direction: column; gap: 2rem; overflow-y: auto; }
+        .status-box h3 { color: #666; font-size: 0.85rem; letter-spacing: 2px; border-bottom: 1px solid #1a1a24; padding-bottom: 6px; margin-bottom: 12px; text-transform: uppercase; }
+        .turn-display { font-size: 3.8rem; color: #fff; font-weight: 900; line-height: 1; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        .sanity-bar-bg { background: #12121c; height: 22px; border: 1px solid #333; position: relative; border-radius: 3px; overflow: hidden; }
+        .sanity-bar-fill { background: var(--term-green); height: 100%; transition: 0.5s ease-out; width: 100%; box-shadow: 0 0 10px var(--term-green); }
+        .clue-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .clue-item { background: #040407; padding: 12px 15px; border-left: 4px solid var(--term-amber); color: #ddd; font-size: 0.95rem; word-break: keep-all; animation: fadeIn 0.3s forwards; border: 1px solid #1a1a24; border-left-width: 4px; }
+        
+        .accuse-btn { margin-top: auto; padding: 1.3rem; background: rgba(255,0,85,0.1); border: 2px solid var(--term-red); color: var(--term-red); font-size: 1.1rem; font-weight: 900; cursor: pointer; transition: 0.3s; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;}
+        .accuse-btn:hover:not(:disabled) { background: var(--term-red); color: #fff; box-shadow: 0 0 25px rgba(255,0,85,0.6); }
+        .accuse-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: #444; color: #666; background: transparent; }
+
+        .hit-effect { animation: shake 0.3s; background-color: rgba(255,0,85,0.2) !important; }
+        @keyframes shake { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-6px, 6px); } 50% { transform: translate(6px, -6px); } }
+        .glitch-effect { animation: glitch-anim 0.3s 4; }
+        @keyframes glitch-anim { 0%, 100% { transform: translate(0); filter: hue-rotate(0deg); } 20% { transform: translate(-15px, 8px); filter: hue-rotate(90deg); } }
+        
+        #blackoutOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; align-items: center; justify-content: center; flex-direction: column; }
+        .midgame-alert { color: var(--term-red); font-size: 3rem; animation: blink 0.2s infinite; font-weight: bold; margin-bottom: 20px;}
+        
+        #qteOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(50,0,25,0.95); z-index: 9998; flex-direction: column; align-items: center; justify-content: center; }
+        .qte-title { color: #fff; font-size: 2.5rem; margin-bottom: 20px; text-shadow: 0 0 15px var(--term-red); animation: blink 0.4s infinite; }
+        .qte-code { font-size: 4rem; color: var(--term-amber); margin-bottom: 30px; font-weight: 900; letter-spacing: 10px; text-shadow: 0 0 10px var(--term-amber);}
+        .qte-input { font-size: 2rem; padding: 12px; text-align: center; background: #000; border: 3px solid var(--term-red); color: #fff; outline: none; text-transform: uppercase; border-radius: 4px;}
+        .qte-timer { font-size: 2rem; color: var(--term-red); margin-top: 20px; }
+
+        .rank-stamp { position: absolute; right: 10%; top: 20%; font-size: 9rem; font-weight: 900; opacity: 0; transform: scale(5) rotate(-15deg); border: 8px solid; padding: 10px 35px; border-radius: 15px; text-shadow: 0 0 20px currentColor; box-shadow: 0 0 40px currentColor, inset 0 0 20px currentColor; pointer-events: none; }
+        .rank-title { position: absolute; right: 10%; top: 52%; font-size: 1.8rem; opacity: 0; transform: translateY(20px); text-shadow: 0 0 10px currentColor; font-weight: bold; }
+        .stamp-anim { animation: stampIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .title-anim { animation: fadeUp 1s 0.8s forwards; }
+        @keyframes stampIn { to { opacity: 0.85; transform: scale(1) rotate(-15deg); } }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+        .rank-ss { color: #ff00ff; border-color: #ff00ff; }
+        .rank-s { color: #ffb000; border-color: #ffb000; }
+        .rank-a { color: #00ff66; border-color: #00ff66; }
+        .rank-b { color: #00ccff; border-color: #00ccff; }
+        .rank-f { color: #ff0055; border-color: #ff0055; }
+    </style>
+</head>
+<body>
+    <div id="blackoutOverlay"><div class="midgame-alert terminal-font" id="alertText">SYSTEM FAILURE</div></div>
+
+    <div id="qteOverlay">
+        <div class="qte-title terminal-font">!!! WARNING: SECURITY BREACH !!!</div>
+        <div class="qte-code terminal-font" id="qteCode">OVERRIDE</div>
+        <input type="text" class="qte-input terminal-font" id="qteInput" autocomplete="off" onkeypress="if(event.key === 'Enter') checkQTE()">
+        <div class="qte-timer terminal-font" id="qteTimer">10:00</div>
+    </div>
+
+    <div id="cinematicOverlay"></div>
+
+    <div id="lobbyScreen">
+        <div class="lobby-header">
+            <div class="lobby-title-box">
+                <h1 class="terminal-font">NEXUS <span>PROTOCOL</span></h1>
+                <p class="section-title terminal-font" style="color: #666; margin:0;">CLASSIFIED INTERACTIVE MYSTERY ENGINE v3.6</p>
+            </div>
+            <!-- 🔥 메인 화면 설정 패널 추가 -->
+            <div class="lobby-settings terminal-font">
+                <label for="lobbyVolumeSlider">🔊 VOL:</label>
+                <input type="range" id="lobbyVolumeSlider" class="sound-slider" min="0" max="1" step="0.05" value="0.3" oninput="changeVolume(this.value)">
+            </div>
+        </div>
+        
+        <div class="section-title terminal-font">1. SELECT CASE FILE (9 SCENARIOS)</div>
+        <div class="case-grid" id="caseGrid">
+            <div class="case-card selected" onclick="selectCase('mansion', this)"><div class="case-title">저주받은 저택</div></div>
+            <div class="case-card" onclick="selectCase('train', this)"><div class="case-title">설국 특급열차 살인</div></div>
+            <div class="case-card" onclick="selectCase('island', this)"><div class="case-title">무인도 연쇄 살인</div></div>
+            <div class="case-card" onclick="selectCase('broadcast', this)"><div class="case-title">생방송 밀실 살인</div></div>
+            <div class="case-card" onclick="selectCase('cyber', this)"><div class="case-title">네온 시티의 유령</div></div>
+            <div class="case-card" onclick="selectCase('classic', this)"><div class="case-title">사라진 반도 밀서</div></div>
+            <div class="case-card" onclick="selectCase('space', this)"><div class="case-title">공허의 우주선</div></div>
+            <div class="case-card" onclick="selectCase('deepsea', this)"><div class="case-title">심해 4000m</div></div>
+            <div class="case-card" onclick="selectCase('zombie', this)"><div class="case-title">제7대피소</div></div>
+        </div>
+
+        <div class="section-title terminal-font">2. SELECT DIFFICULTY</div>
+        <div class="diff-grid" id="diffGrid">
+            <div class="diff-card" onclick="selectDiff('easy', this)"><div class="diff-title">EASY</div><div class="diff-desc">턴 60 / 체력 200</div></div>
+            <div class="diff-card selected" onclick="selectDiff('normal', this)"><div class="diff-title">NORMAL</div><div class="diff-desc">턴 40 / 체력 150</div></div>
+            <div class="diff-card" onclick="selectDiff('hard', this)"><div class="diff-title">HARD</div><div class="diff-desc">턴 25 / 체력 100</div></div>
+        </div>
+
+        <div class="auth-panel">
+            <input type="text" id="playerName" placeholder="요원 ID 입력" class="terminal-font">
+            <input type="text" id="roomCode" placeholder="보안 채널 (멀티룸 코드)" class="terminal-font">
+            <button class="terminal-font" onclick="initGame()">SYSTEM ACCESS</button>
+        </div>
+    </div>
+
+    <div id="gameScreen">
+        <header>
+            <div class="terminal-font" style="color:var(--term-green); font-size:1.1rem; font-weight:bold; letter-spacing: 2px;">⚡ M.A.I.A ENGINE ACTIVE</div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div class="sound-control-box terminal-font">
+                    <label for="volumeSlider">🔊 VOL:</label>
+                    <input type="range" id="volumeSlider" class="sound-slider" min="0" max="1" step="0.05" value="0.3" oninput="changeVolume(this.value)">
+                </div>
+                <div class="terminal-font" style="color:#777; font-size: 0.9rem;">CH: <span id="displayRoom" style="color:#fff"></span> | AGENT: <span id="p1Badge" style="color:#fff"></span></div>
+            </div>
+        </header>
+        <div class="main-container">
+            <div class="terminal-panel">
+                <div class="chat-box" id="chatBox"></div>
+                <div id="typingIndicator" class="terminal-font">>> M.A.I.A가 현장 데이터를 연산 중입니다...</div>
+                <div class="action-buttons">
+                    <button class="action-btn terminal-font" onclick="insertAction('[🔍조사]')">🔍 현장 조사</button>
+                    <button class="action-btn terminal-font" onclick="insertAction('[🗣️심문]')">🗣️ 용의자 심문</button>
+                    <button class="action-btn terminal-font" onclick="insertAction('[🔬분석]')">🔬 증거 분석</button>
+                </div>
+                <div class="input-area">
+                    <span class="terminal-font">></span>
+                    <input type="text" id="chatInput" placeholder="명령어 또는 수사 행동 입력..." autocomplete="off" onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button class="terminal-font" id="sendBtn" onclick="sendMessage()">EXECUTE</button>
+                </div>
+            </div>
+            <div class="status-panel">
+                <div class="status-box"><h3 class="terminal-font">REMAINING TURNS</h3><div class="turn-display terminal-font" id="turnCount">40</div></div>
+                <div class="status-box"><h3 class="terminal-font">AGENT SANITY</h3><div class="sanity-bar-bg"><div class="sanity-bar-fill" id="sanityBar"></div></div></div>
+                <div class="status-box" style="flex:1;"><h3 class="terminal-font">COLLECTED CLUES</h3><ul class="clue-list" id="clueList"></ul></div>
+                <button class="accuse-btn terminal-font" id="accuseBtn" onclick="accuse()">🚨 최종 범인 지목</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let audioCtx, masterGainNode, heartbeatInterval, panicInterval;
+        let currentSanity = 150, maxTurnsVal = 40; 
+        let qteInterval, qteTimeLeft = 10;
+        let currentQteCode = "";
+        let originalTitle = document.title;
+        let isUserScrolling = false; 
+
+        function initAudio() {
+            if (!audioCtx) { 
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+                masterGainNode = audioCtx.createGain();
+                masterGainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                masterGainNode.connect(audioCtx.destination);
+                startBGM(); 
+            }
+        }
+
+        // 🔥 메인 화면과 게임 화면 슬라이더 값을 동기화하여 실시간 조절
+        function changeVolume(val) {
+            initAudio(); // 슬라이더 건드릴 때 오디오 엔진 활성화
+            if (masterGainNode && audioCtx) {
+                masterGainNode.gain.setValueAtTime(parseFloat(val), audioCtx.currentTime);
+            }
+            // 양쪽 슬라이더 값 동기화
+            document.getElementById('lobbyVolumeSlider').value = val;
+            const gameSlider = document.getElementById('volumeSlider');
+            if(gameSlider) gameSlider.value = val;
+        }
+
+        function playBeep(isNpc = false) {
+            if(!audioCtx || !masterGainNode) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = isNpc ? 'triangle' : 'square'; 
+            osc.frequency.setValueAtTime((isNpc ? 800 : 600) + Math.random()*200, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.02, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            osc.connect(gain); osc.connect(masterGainNode); 
+            osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+        }
+        function playBoom() {
+            if(!audioCtx || !masterGainNode) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+            osc.connect(gain); osc.connect(masterGainNode);
+            osc.start(); osc.stop(audioCtx.currentTime + 1.0);
+        }
+        function playPanicTick() {
+            if(!audioCtx || !masterGainNode) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = 'square'; osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.03, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.connect(gain); osc.connect(masterGainNode);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+        function startBGM() {
+            if(!audioCtx || !masterGainNode) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(50, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.02, audioCtx.currentTime); 
+            osc.connect(gain); osc.connect(masterGainNode);
+            osc.start();
+        }
+
+        function manageHeartbeat(sanity, turns) {
+            clearInterval(heartbeatInterval);
+            clearInterval(panicInterval);
+            
+            if(sanity <= 20) {
+                const creepyTitles = ["도망쳐", "뒤를 봐", "넌 죽어", "M.A.I.A가 널 보고있어"];
+                document.title = creepyTitles[Math.floor(Math.random() * creepyTitles.length)];
+            } else { document.title = originalTitle; }
+
+            if(turns > 0 && turns <= 3) {
+                document.body.classList.add('panic-mode');
+                document.getElementById('turnCount').classList.add('panic-text');
+                panicInterval = setInterval(()=>playPanicTick(), 300);
+            } else {
+                document.body.classList.remove('panic-mode');
+                document.getElementById('turnCount').classList.remove('panic-text');
+            }
+
+            if (sanity <= 20) heartbeatInterval = setInterval(()=>playBoom(), 500);
+            else if (sanity <= 50) heartbeatInterval = setInterval(()=>playBoom(), 1200);
+        }
+
+        const socket = io();
+        let myName = "AGENT", myRoom = "", selectedScenario = "mansion", selectedDifficulty = "normal", isGameOver = false, isProcessing = false;
+
+        function setInputLock(locked) {
+            isProcessing = locked; document.getElementById('chatInput').disabled = locked; document.getElementById('sendBtn').disabled = locked; document.getElementById('accuseBtn').disabled = locked;
+            document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = locked);
+            if(!locked && !isGameOver) document.getElementById('chatInput').focus();
+        }
+
+        function selectCase(caseId, element) {
+            selectedScenario = caseId; document.querySelectorAll('#caseGrid .case-card').forEach(card => card.classList.remove('selected')); element.classList.add('selected');
+        }
+
+        function selectDiff(diffKey, element) {
+            selectedDifficulty = diffKey; document.querySelectorAll('#diffGrid .diff-card').forEach(card => card.classList.remove('selected')); element.classList.add('selected');
+            if(diffKey === 'easy') maxTurnsVal = 60;
+            else if(diffKey === 'normal') maxTurnsVal = 40;
+            else maxTurnsVal = 25;
+        }
+
+        function initGame() {
+            initAudio(); myName = document.getElementById('playerName').value.trim() || "AGENT"; myRoom = document.getElementById('roomCode').value.trim() || "001";
+            document.getElementById('p1Badge').innerText = myName; document.getElementById('displayRoom').innerText = myRoom; document.getElementById('lobbyScreen').style.display = 'none';
+            
+            const box = document.getElementById('chatBox');
+            box.addEventListener('scroll', () => {
+                const isAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 50;
+                isUserScrolling = !isAtBottom;
+            });
+
+            socket.emit('joinRoom', { name: myName, room: myRoom, scenario: selectedScenario, difficulty: selectedDifficulty });
+        }
+
+        socket.on('skip_intro_cinematic', () => {
+            const gameScreen = document.getElementById('gameScreen'); gameScreen.style.display = 'flex';
+            setTimeout(() => gameScreen.style.opacity = 1, 50); setInputLock(false);
+        });
+
+        socket.on('play_intro_cinematic', (lines) => {
+            setInputLock(true); const cinematic = document.getElementById('cinematicOverlay');
+            cinematic.style.display = 'flex'; cinematic.innerHTML = '';
+            let i = 0;
+            function showNextLine() {
+                if (i < lines.length) {
+                    playBoom(); const lineDiv = document.createElement('div');
+                    lineDiv.className = 'cinematic-text terminal-font'; lineDiv.innerHTML = lines[i]; cinematic.appendChild(lineDiv);
+                    setTimeout(() => lineDiv.classList.add('active'), 50); i++; setTimeout(showNextLine, 2000); 
+                } else {
+                    setTimeout(() => {
+                        cinematic.style.display = 'none'; const gameScreen = document.getElementById('gameScreen');
+                        gameScreen.style.display = 'flex'; setTimeout(() => { gameScreen.style.opacity = 1; setInputLock(false); }, 50);
+                    }, 1000);
+                }
+            } showNextLine();
+        });
+
+        function insertAction(prefix) { if(isProcessing) return; const input = document.getElementById('chatInput'); input.value = prefix + " "; input.focus(); }
+
+        socket.on('game_state', (state) => {
+            document.getElementById('turnCount').innerText = state.turns;
+            const sanityBar = document.getElementById('sanityBar'); sanityBar.style.width = ((state.sanity / (selectedDifficulty === 'easy' ? 200 : (selectedDifficulty === 'hard' ? 100 : 150))) * 100) + '%'; currentSanity = state.sanity; 
+            
+            document.body.className = '';
+            if(state.sanity <= 20) { sanityBar.style.background = 'var(--term-red)'; sanityBar.style.boxShadow = '0 0 20px var(--term-red)'; document.body.classList.add('madness-level-2'); } 
+            else if(state.sanity <= 50) { sanityBar.style.background = 'var(--term-amber)'; sanityBar.style.boxShadow = '0 0 20px var(--term-amber)'; document.body.classList.add('madness-level-1'); } 
+            else { sanityBar.style.background = 'var(--term-green)'; sanityBar.style.boxShadow = '0 0 10px var(--term-green)'; }
+            
+            manageHeartbeat(state.sanity, state.turns);
+
+            const clueList = document.getElementById('clueList'); clueList.innerHTML = '';
+            state.clues.forEach(clue => { const li = document.createElement('li'); li.className = 'clue-item terminal-font'; li.innerText = `>> ${clue}`; clueList.appendChild(li); });
+        });
+
+        socket.on('system_alert', (msg) => {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML += `<div style="color:var(--term-amber); text-align:center; padding:12px; border:1px dashed var(--term-amber); margin: 12px 0; background:rgba(255,176,0,0.05);" class="terminal-font">${msg}</div>`;
+            if(!isUserScrolling) chatBox.scrollTop = chatBox.scrollHeight;
+            playBeep(); playBeep();
+        });
+
+        socket.on('sanity_hit', () => { document.body.classList.add('hit-effect'); playBoom(); setTimeout(() => document.body.classList.remove('hit-effect'), 400); });
+
+        socket.on('special_event', (type) => {
+            if(type === 'CUTSCENE_ALERT') {
+                const blackout = document.getElementById('blackoutOverlay'); document.getElementById('alertText').innerText = "SECURITY BREACH DETECTED"; blackout.style.display = 'flex'; playBoom(); setTimeout(() => blackout.style.display = 'none', 1500);
+            } else if(type === 'GLITCH') {
+                document.body.classList.add('glitch-effect'); playBoom(); setTimeout(() => document.body.classList.remove('glitch-effect'), 900);
+            }
+        });
+
+        socket.on('trigger_qte_event', () => {
+            if(isGameOver) return; setInputLock(true); playBoom();
+            const codes = ["OVERRIDE", "PURGE", "REBOOT", "ISOLATE", "DEFEND"]; currentQteCode = codes[Math.floor(Math.random() * codes.length)];
+            document.getElementById('qteCode').innerText = currentQteCode; document.getElementById('qteInput').value = ""; document.getElementById('qteOverlay').style.display = 'flex'; document.getElementById('qteInput').focus();
+            qteTimeLeft = 10; document.getElementById('qteTimer').innerText = `${qteTimeLeft}.00`;
+            qteInterval = setInterval(() => {
+                qteTimeLeft -= 0.1; document.getElementById('qteTimer').innerText = qteTimeLeft.toFixed(2);
+                if(qteTimeLeft <= 0) { clearInterval(qteInterval); document.getElementById('qteOverlay').style.display = 'none'; socket.emit('qte_result', { room: myRoom, success: false }); setInputLock(false); }
+            }, 100);
+        });
+
+        function checkQTE() {
+            const input = document.getElementById('qteInput').value.toUpperCase().trim();
+            if(input === currentQteCode) { clearInterval(qteInterval); document.getElementById('qteOverlay').style.display = 'none'; socket.emit('qte_result', { room: myRoom, success: true }); setInputLock(false); }
+        }
+
+        socket.on('ai_typing_start', () => { setInputLock(true); document.getElementById('typingIndicator').style.display = 'block'; const box = document.getElementById('chatBox'); if(!isUserScrolling) box.scrollTop = box.scrollHeight; });
+        socket.on('chat history', (history) => { const box = document.getElementById('chatBox'); box.innerHTML = ''; history.forEach(data => drawMessage(data, false)); box.scrollTop = box.scrollHeight; });
+        socket.on('chat message', (data) => { document.getElementById('typingIndicator').style.display = 'none'; drawMessage(data, true); });
+
+        function applyHallucination(char, sanity) {
+            if (sanity > 30) return char;
+            const zalgoChars = ['#', '@', '%', '&', '?', '§', '¶', '‡'];
+            if (Math.random() < 0.15) return `<span class="hallucinating" style="color:var(--term-red);">${zalgoChars[Math.floor(Math.random() * zalgoChars.length)]}</span>`;
+            return char;
+        }
+
+        function drawMessage(data, useTypingEffect) {
+            const chatBox = document.getElementById('chatBox'); const msgDiv = document.createElement('div');
+            if (data.type === 'system') {
+                const isNpc = (data.name !== 'M.A.I.A' && data.name !== 'SYS_RECORDS');
+                msgDiv.className = isNpc ? 'msg npc' : 'msg ai';
+                msgDiv.innerHTML = `<div class="sender-name terminal-font">${data.name}</div><div class="${isNpc ? 'npc-text' : 'ai-text'}"></div>`;
+                chatBox.appendChild(msgDiv);
+                
+                const textContainer = msgDiv.querySelector('div:nth-child(2)');
+                let i = 0;
+                function typeWriter() {
+                    if (i < data.text.length) {
+                        const originalChar = data.text.charAt(i);
+                        const charToPrint = (data.name === 'SYS_RECORDS') ? originalChar : applyHallucination(originalChar, currentSanity);
+                        textContainer.innerHTML += charToPrint;
+                        if(originalChar !== ' ' && i % 2 === 0) playBeep(isNpc); 
+                        i++; 
+                        if(!isUserScrolling) chatBox.scrollTop = chatBox.scrollHeight; 
+                        setTimeout(typeWriter, isNpc ? 20 : 30);
+                    } else { if(!isGameOver) setInputLock(false); }
+                }
+                if(useTypingEffect) typeWriter(); else { textContainer.innerHTML = data.text; if(!isUserScrolling) chatBox.scrollTop = chatBox.scrollHeight; }
+            } else {
+                if(data.name === myName) { msgDiv.className = 'msg p1'; msgDiv.innerHTML = `<div class="sender-name terminal-font">${data.name}</div><div class="p1-text">${data.text}</div>`; }
+                chatBox.appendChild(msgDiv); 
+                if(!isUserScrolling) chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        function sendMessage() {
+            if(isGameOver || isProcessing) return; const input = document.getElementById('chatInput'); const text = input.value.trim();
+            if(!text) return; socket.emit('chat message', { room: myRoom, type: 'user', name: myName, text: text }); input.value = '';
+            isUserScrolling = false; 
+        }
+
+        function accuse() {
+            if(isGameOver || isProcessing) return; const text = prompt("[🚨 최종 기소] 단 한 번의 기회입니다. 범인과 트릭을 완벽히 서술하십시오:");
+            if(text) socket.emit('chat message', { room: myRoom, type: 'user', name: myName, text: `[🚨기소] ${text}` });
+        }
+
+        function calculateRank(turns, sanity, result, maxTurns) {
+            if(result === 'lose') return { rank: 'F', title: 'AI의 장난감', cls: 'rank-f' };
+            const multiplier = maxTurns === 60 ? 0.6 : (maxTurns === 25 ? 1.3 : 1.0);
+            const score = ((turns * 10) + sanity) * multiplier;
+            
+            if(score >= 450) return { rank: 'SS', title: '전설의 마스터 탐정', cls: 'rank-ss' };
+            if(score >= 320) return { rank: 'S', title: '엘리트 수사관', cls: 'rank-s' };
+            if(score >= 220) return { rank: 'A', title: '우수한 형사', cls: 'rank-a' };
+            if(score >= 120) return { rank: 'B', title: '쓸만한 조수', cls: 'rank-b' };
+            return { rank: 'C', title: '운이 좋았던 생존자', cls: 'rank-b' };
+        }
+
+        socket.on('game_over', (data) => {
+            isGameOver = true; setInputLock(true); clearInterval(heartbeatInterval); clearInterval(panicInterval); document.title = originalTitle;
+            const gameScreen = document.getElementById('gameScreen'); gameScreen.style.opacity = 0; 
+            
+            setTimeout(() => {
+                gameScreen.style.display = 'none';
+                const cinematic = document.getElementById('cinematicOverlay'); cinematic.style.display = 'flex'; cinematic.innerHTML = '';
+                
+                const titleDiv = document.createElement('div'); titleDiv.className = 'cinematic-text terminal-font'; titleDiv.style.fontSize = '4.5rem';
+                titleDiv.style.color = data.result === 'win' ? 'var(--term-green)' : 'var(--term-red)';
+                titleDiv.innerHTML = data.result === 'win' ? 'CASE CLOSED' : 'YOU DIED';
+                cinematic.appendChild(titleDiv);
+                setTimeout(() => { titleDiv.classList.add('active'); playBoom(); }, 100);
+
+                const epilogueDiv = document.createElement('div'); epilogueDiv.className = 'cinematic-text terminal-font'; epilogueDiv.style.fontSize = '1.2rem';
+                epilogueDiv.style.marginTop = '30px'; epilogueDiv.style.color = '#ddd'; epilogueDiv.style.opacity = '1'; 
+                cinematic.appendChild(epilogueDiv);
+
+                setTimeout(() => {
+                    let i = 0;
+                    function typeEpilogue() {
+                        if (i < data.epilogue.length) {
+                            epilogueDiv.innerHTML += data.epilogue.charAt(i); if(i % 3 === 0) playBeep(); i++; setTimeout(typeEpilogue, 40);
+                        } else {
+                            const rankInfo = calculateRank(data.finalTurns, data.finalSanity, data.result, data.maxTurns);
+                            
+                            const rankStamp = document.createElement('div');
+                            rankStamp.className = `rank-stamp terminal-font ${rankInfo.cls} stamp-anim`;
+                            rankStamp.innerHTML = rankInfo.rank;
+                            cinematic.appendChild(rankStamp);
+
+                            const rankTitle = document.createElement('div');
+                            rankTitle.className = `rank-title terminal-font ${rankInfo.cls} title-anim`;
+                            rankTitle.innerHTML = `[칭호: ${rankInfo.title}]`;
+                            cinematic.appendChild(rankTitle);
+
+                            setTimeout(() => playBoom(), 200); 
+
+                            const restartDiv = document.createElement('div'); restartDiv.className = 'cinematic-text terminal-font';
+                            restartDiv.style.fontSize = '1.1rem'; restartDiv.style.marginTop = '50px';
+                            restartDiv.style.color = '#888'; restartDiv.innerHTML = ">> F5 TO REBOOT <<"; cinematic.appendChild(restartDiv);
+                            setTimeout(() => restartDiv.classList.add('active'), 2000);
+                        }
+                    }
+                    typeEpilogue();
+                }, 2000);
+            }, 1000); 
+        });
+    </script>
+</body>
+</html>
